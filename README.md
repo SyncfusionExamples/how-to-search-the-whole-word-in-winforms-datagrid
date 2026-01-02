@@ -1,12 +1,10 @@
-# How to search the whole word in WinForms DataGrid (SfDataGrid)?
+# How to Search the Whole Word in WinForms DataGrid?
 
-## About the sample
+This sample illustrates how to search the whole word in [WinForms DataGrid](https://www.syncfusion.com/winforms-ui-controls/datagrid) (SfDataGrid).
 
-This sample illustrates how to search the whole word in WinForms DataGrid.
+In `DataGrid`, searching will be performed by contains search condition in the default SearchController. So that, all cell values which contains the search text will be highlighted. For example, if the search text is "Alice" and the DataGrid contains the values "Alice" and "Alice Mutton" in two different cells, the search text Alice in both the cells will be highlighted. 
 
-In SfDataGrid, searching will be performed by contains search condition in the default SearchController. So that, all cell values which contains the search text will be highlighted. For example, if the search text is “Alice” and the DataGrid contains the values “Alice” and “Alice Mutton” in two different cells, the search text Alice in both the cells will be highlighted. 
-
-We can change this behavior to highlight the cell only if the cell value is completely same as the search text. That is, only the cell with the text “Alice” will be highlighted. This can be achieved by creating a custom SearchController and apply Equals search instead of Contains search. 
+We can change this behavior to highlight the cell only if the cell value is completely same as the search text. That is, only the cell with the text "Alice" will be highlighted. This can be achieved by creating a custom SearchController and apply Equals search instead of Contains search. 
 
 
 ```c#
@@ -22,6 +20,7 @@ public class CustomSearchController : SearchController
     {
 
     }
+
     protected override void HighlightSearchText(Graphics paint, DataColumnBase column, CellStyleInfo style, 
         Rectangle bounds, string cellValue, RowColumnIndex rowColumnIndex)
     {
@@ -47,9 +46,6 @@ public class CustomSearchController : SearchController
             List<int> matchList = Regex.Matches(cellValue, searchText, this.AllowCaseSensitiveSearch ? RegexOptions.None : RegexOptions.IgnoreCase)
                                             .Cast<Match>()
                                             .Select(s => s.Index).ToList();
-
-            
-
 
             if (matchList.Count > 0 && bounds.Width > 0)
             {
@@ -160,7 +156,7 @@ public class CustomSearchController : SearchController
 }
 ```
 
-![Searching_Image](searchImage.png)
+![DataGrid showing search panel for searching whole word](SearchPanelForWholeWord.png)
 
 ## Requirements to run the demo
 Visual Studio 2015 and above versions
