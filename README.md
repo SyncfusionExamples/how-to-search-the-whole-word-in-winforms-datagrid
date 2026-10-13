@@ -1,13 +1,28 @@
-# How to Search the Whole Word in WinForms DataGrid?
+# How to Search the Whole Word in WinForms Data Grid?
 
-This sample illustrates how to search the whole word in [WinForms DataGrid](https://www.syncfusion.com/winforms-ui-controls/datagrid) (SfDataGrid).
+This sample demonstrates how to search for the whole word in [WinForms DataGrid](https://www.syncfusion.com/winforms-ui-controls/datagrid) (SfDataGrid) instead of highlighting partial matches.
 
-In `DataGrid`, searching will be performed by contains search condition in the default SearchController. So that, all cell values which contains the search text will be highlighted. For example, if the search text is "Alice" and the DataGrid contains the values "Alice" and "Alice Mutton" in two different cells, the search text Alice in both the cells will be highlighted. 
+By default, the Grid uses a contains search condition. This means that if you search for `Ali`, values like `Alice` and `Malice` will also be highlighted. This sample customizes the search behavior so that only cells whose value exactly matches the search text are highlighted.
 
-We can change this behavior to highlight the cell only if the cell value is completely same as the search text. That is, only the cell with the text "Alice" will be highlighted. This can be achieved by creating a custom SearchController and apply Equals search instead of Contains search. 
+For example, when searching for `Alice`, the cell with the value `Alice` is highlighted, while `Alice Johnson` and `Malice` are not.
 
+## Features
 
-```c#
+- Whole-word matching in WinForms Data Grid cells
+- Custom `SearchController` implementation
+- Supports case-sensitive and case-insensitive matching
+- Safely handles special regex meta-characters
+- Highlights matching text without partial-match false positives
+
+## Screenshot
+
+![DataGrid showing search panel for searching whole word](SearchPanelForWholeWord.png)
+
+## Implementation
+
+This sample overrides the `HighlightSearchText` method in a custom `SearchController` and uses a regular expression with exact matching.
+
+```csharp
 public Form1()
 {
     InitializeComponent();
@@ -21,7 +36,7 @@ public class CustomSearchController : SearchController
 
     }
 
-    protected override void HighlightSearchText(Graphics paint, DataColumnBase column, CellStyleInfo style, 
+    protected override void HighlightSearchText(Graphics paint, DataColumnBase column, CellStyleInfo style,
         Rectangle bounds, string cellValue, RowColumnIndex rowColumnIndex)
     {
         if (AllowHighlightSearchText && !string.IsNullOrEmpty(SearchText))
@@ -42,19 +57,16 @@ public class CustomSearchController : SearchController
 
             searchText = "^(" + searchText + ")$";
 
-            //Gets the list of indexes that match with the search text.
-            List<int> matchList = Regex.Matches(cellValue, searchText, this.AllowCaseSensitiveSearch ? RegexOptions.None : RegexOptions.IgnoreCase)
-                                            .Cast<Match>()
-                                            .Select(s => s.Index).ToList();
+            List<int> matchList = Regex.Matches(cellValue, searchText,
+                this.AllowCaseSensitiveSearch ? RegexOptions.None : RegexOptions.IgnoreCase)
+                .Cast<Match>()
+                .Select(s => s.Index).ToList();
 
             if (matchList.Count > 0 && bounds.Width > 0)
             {
                 StringFormat format = new StringFormat(StringFormat.GenericDefault);
-
                 List<CharacterRange[]> characterRangeList = new List<CharacterRange[]>();
 
-                //Used 32 as CharacterRangeLength to avoid System.OverFlowExcepion 
-                //in StringFormat.SetMeasurableCharacterRanges which occurs if the CharacterRange length is more than 32.
                 int characterRangeLength = 32;
                 int count = matchList.Count / characterRangeLength;
                 int range = matchList.Count % characterRangeLength;
@@ -73,7 +85,6 @@ public class CustomSearchController : SearchController
                         }
 
                         characterRangeList.Add(characterRange);
-                        characterRange = null;
                     }
                 }
 
@@ -87,13 +98,9 @@ public class CustomSearchController : SearchController
                     }
 
                     characterRangeList.Add(characterRange);
-                    characterRange = null;
                 }
 
-                //VerticalAlignment
                 format.LineAlignment = ConvertToStringAlignment(style.VerticalAlignment);
-
-                //HorizontalAlignment
                 format.Alignment = ConvertToStringAlignment(style.HorizontalAlignment);
 
                 if (!column.GridColumn.AllowTextWrapping)
@@ -107,10 +114,7 @@ public class CustomSearchController : SearchController
 
                 foreach (var characterRange in characterRangeList)
                 {
-                    //Set the range of characters to be measured.
                     format.SetMeasurableCharacterRanges(characterRange);
-
-                    //Gets the regions of the measurable characters applied to the string format for the given text with in the text bounds.
                     Region[] regions = paint.MeasureCharacterRanges(cellValue, style.GetFont(), bounds, format);
 
                     RectangleF[] fillRectangle = new RectangleF[regions.Length];
@@ -121,15 +125,9 @@ public class CustomSearchController : SearchController
                     if (this.CurrentRowColumnIndex == rowColumnIndex)
                         highlightColor = SearchHighlightColor;
 
-                    // Highlights the search text based on the 
                     using (Brush brush = new SolidBrush(highlightColor))
                         paint.FillRectangles(brush, fillRectangle);
                 }
-
-                characterRangeList.Clear();
-                characterRangeList = null;
-                matchList.Clear();
-                matchList = null;
             }
         }
     }
@@ -156,7 +154,22 @@ public class CustomSearchController : SearchController
 }
 ```
 
-![DataGrid showing search panel for searching whole word](SearchPanelForWholeWord.png)
-
 ## Requirements to run the demo
-Visual Studio 2015 and above versions
+
+- Visual Studio 2015 or later
+- Syncfusion WinForms Data Grid package
+- .NET Framework support for WinForms applications
+
+## How to run this example
+
+1. Open the project in Visual Studio.
+2. Restore the required NuGet packages.
+3. Build the project.
+4. Run the application.
+5. Use the search panel to search for a complete word.
+
+## Resources
+
+- [WinForms DataGrid documentation](https://www.syncfusion.com/winforms-ui-controls/datagrid)
+- [Syncfusion WinForms controls](https://www.syncfusion.com/winforms-ui-controls)
+- [SyncfusionExamples GitHub](https://github.com/SyncfusionExamples)
